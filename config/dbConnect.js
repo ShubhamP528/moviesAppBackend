@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 exports.dbconnect = () => {
   mongoose
-    .connect("mongodb://127.0.0.1:27017/movies")
+    .connect(process.env.DB_URL)
     .then(() => {
       console.log("db connect");
     })
