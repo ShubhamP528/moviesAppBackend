@@ -1,0 +1,169 @@
+const express = require("express");
+const http = require("http");
+const socketIo = require("socket.io");
+
+const app = express();
+const server = http.createServer(app);
+const io = socketIo(server);
+
+const { dbconnect } = require("./config/dbConnect");
+const authRoutes = require("./routes/authRoutes");
+const roomRoutes = require("./routes/roomRoutes");
+
+const cors = require("cors");
+
+// Allow requests from the specified origin
+app.use(
+  cors({
+    origin: "http://localhost:1234",
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
+
+if (process.env.NODE_ENV !== "production") {
+  require("dotenv").config();
+}
+dbconnect();
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+app.use("/api/auth", authRoutes);
+app.use("/api/room", roomRoutes);
+
+// Store sessions' states
+const sessions = {};
+
+app.post("/getVideoId", (req, res) => {
+  const { room } = req.body;
+  // If the session has a state, emit that state to the newly joined client
+  if (sessions[room]) {
+    // Fetch the video ID associated with the room from your backend storage
+    const TvideoId = sessions[room].videoId;
+
+    if (TvideoId) {
+      // If video ID exists, emit it to the client
+      res.status(201).json({ videoId: TvideoId });
+    } else {
+      // If video ID doesn't exist, handle the scenario accordingly (e.g., send an error message)
+      res.status(201).json({ videoId: "not available" });
+    }
+  }
+  res.status(500).json({ message: "room not registered" });
+});
+
+io.on("connection", (socket) => {
+  console.log("A user connected: " + socket.id);
+
+  socket.on("joinRoom", ({ sessionId, videoId }) => {
+    console.log(`Socket ${socket.id} joining session: ${sessionId}`);
+    socket.join(sessionId);
+    socket.sessionId = sessionId;
+
+    // Notify all other users in the session
+    socket.to(sessionId).emit("newUserJoined");
+
+    // If the session has a state, emit that state to the newly joined client
+    if (sessions[sessionId]) {
+      // Fetch the video ID associated with the room from your backend storage
+      const TvideoId = sessions[sessionId].videoId;
+
+      if (TvideoId) {
+        // If video ID exists, emit it to the client
+        socket.emit("videoId", TvideoId);
+      } else {
+        // If video ID doesn't exist, handle the scenario accordingly (e.g., send an error message)
+        socket.emit("videoIdError", "Video ID not found for the room");
+      }
+      console.log(sessions[sessionId]);
+      socket.emit("currentState", sessions[sessionId]);
+    } else {
+      sessions[sessionId] = {
+        action: "play",
+        time: 0,
+        host: socket.id,
+        videoId,
+      };
+    }
+  });
+
+  // Handle receiving the current state from an existing user
+  socket.on("currentState", ({ sessionId, action, time }) => {
+    // Update the session's state
+    sessions[sessionId] = { ...sessions[sessionId], action, time };
+
+    // Emit the updated state to all users in the session, including the new user
+    io.to(sessionId).emit("control", { ...sessions[sessionId], action, time });
+  });
+
+  socket.on("play", ({ sessionId, time }) => {
+    console.log(`Play video in session: ${sessionId}`);
+    const state = { ...sessions[sessionId], action: "play", time: time ?? 0 };
+    sessions[sessionId] = state;
+    io.to(sessionId).emit("control", state);
+  });
+
+  socket.on("requestInitialPlaybackTime", ({ sessionId }) => {
+    console.log(`Play video in session: ${sessionId}`);
+    const state = sessions[sessionId];
+    io.to(sessionId).emit("control", state);
+  });
+
+  socket.on("pause", ({ sessionId, time }) => {
+    console.log(`Pause video in session: ${sessionId}`);
+    const state = { ...sessions[sessionId], action: "pause", time };
+    sessions[sessionId] = state;
+    io.to(sessionId).emit("control", state);
+  });
+
+  socket.on("seek", ({ sessionId, time }) => {
+    console.log(`Seek video in session: ${sessionId}`);
+    // Update the session's state to reflect the seek action
+    const state = sessions[sessionId] || {};
+    state.time = time;
+    sessions[sessionId] = state;
+
+    io.to(sessionId).emit("control", { action: "seek", time });
+  });
+
+  socket.on("disconnect", () => {
+    console.log("User disconnected: " + socket.id);
+    console.log("user leave the session");
+
+    // Check if the disconnected user was the host of any session
+    Object.keys(sessions).forEach((sessionId) => {
+      if (sessions[sessionId].host === socket.id) {
+        console.log(`Host ${socket.id} left session ${sessionId}`);
+
+        // Remove the host from the session
+        delete sessions[sessionId].host;
+
+        // Select a new host from the remaining users in the session
+        const remainingUsers = Object.keys(
+          io.sockets.adapter.rooms[sessionId]?.sockets || {}
+        );
+        if (remainingUsers.length > 0) {
+          const newHost = remainingUsers[0];
+          sessions[sessionId].host = newHost;
+          console.log(
+            `User ${newHost} is the new host of session ${sessionId}`
+          );
+
+          // Send the current state to the new host
+          io.to(newHost).emit("currentState", sessions[sessionId]);
+
+          // Notify all users in the session about the new host
+          io.to(sessionId).emit("newHost", { newHost });
+        } else {
+          console.log(`No remaining users in session ${sessionId}`);
+          // No remaining users, remove the session
+          delete sessions[sessionId];
+        }
+      }
+    });
+  });
+});
+
+const PORT = process.env.PORT || 8080;
+server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
