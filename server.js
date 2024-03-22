@@ -21,7 +21,7 @@ const cors = require("cors");
 // Allow requests from the specified origin
 app.use(
   cors({
-    origin: "http://localhost:1234",
+    origin: "http://localhost:52354",
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
