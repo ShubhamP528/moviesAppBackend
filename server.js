@@ -7,7 +7,7 @@ const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
     origin:
-      "https://movies-app-frontend-aqefhoycu-shubhams-projects-9fdff750.vercel.app/",
+      "https://movies-app-frontend-aqefhoycu-shubhams-projects-9fdff750.vercel.app",
     methods: ["GET", "POST"],
     allowedHeaders: ["Content-Type", "Authorization"],
   },
