@@ -18,7 +18,7 @@ const roomRoutes = require("./routes/roomRoutes");
 
 const cors = require("cors");
 
-// Allow requests from the specified origin
+// Allow requests from the specified- origin
 app.use(
   cors({
     origin: "http://localhost:52354",
