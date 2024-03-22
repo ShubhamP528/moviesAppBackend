@@ -19,7 +19,6 @@ const userSchema = new mongoose.Schema({
   },
   room: {
     type: String,
-    unique: true,
   },
 });
 
