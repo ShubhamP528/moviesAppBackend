@@ -6,7 +6,7 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
-    origin: "http://localhost:52354",
+    origin: "http://localhost:1234",
     methods: ["GET", "POST"],
     allowedHeaders: ["Content-Type", "Authorization"],
   },
@@ -21,7 +21,7 @@ const cors = require("cors");
 // Allow requests from the specified- origin
 app.use(
   cors({
-    origin: "http://localhost:52354",
+    origin: "http://localhost:1234",
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
