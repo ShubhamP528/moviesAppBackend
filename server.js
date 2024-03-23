@@ -7,7 +7,7 @@ const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
     origin: "http://localhost:1234",
-    methods: ["GET", "POST"],
+    methods: ["GET", "POST", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   },
 });
