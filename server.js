@@ -138,42 +138,42 @@ io.on("connection", (socket) => {
     io.to(sessionId).emit("control", { action: "seek", time });
   });
 
-  // socket.on("disconnect", () => {
-  //   console.log("User disconnected: " + socket.id);
-  //   console.log("user leave the session");
+  socket.on("disconnect", () => {
+    console.log("User disconnected: " + socket.id);
+    console.log("user leave the session");
 
-  //   // Check if the disconnected user was the host of any session
-  //   Object.keys(sessions).forEach((sessionId) => {
-  //     if (sessions[sessionId].host === socket.id) {
-  //       console.log(`Host ${socket.id} left session ${sessionId}`);
+    // Check if the disconnected user was the host of any session
+    Object.keys(sessions).forEach((sessionId) => {
+      if (sessions[sessionId].host === socket.id) {
+        console.log(`Host ${socket.id} left session ${sessionId}`);
 
-  //       // Remove the host from the session
-  //       delete sessions[sessionId].host;
+        // Remove the host from the session
+        delete sessions[sessionId].host;
 
-  //       // Select a new host from the remaining users in the session
-  //       const remainingUsers = Object.keys(
-  //         io.sockets.adapter.rooms[sessionId]?.sockets || {}
-  //       );
-  //       if (remainingUsers.length > 0) {
-  //         const newHost = remainingUsers[0];
-  //         sessions[sessionId].host = newHost;
-  //         console.log(
-  //           `User ${newHost} is the new host of session ${sessionId}`
-  //         );
+        // Select a new host from the remaining users in the session
+        const remainingUsers = Object.keys(
+          io.sockets.adapter.rooms[sessionId]?.sockets || {}
+        );
+        if (remainingUsers.length > 0) {
+          const newHost = remainingUsers[0];
+          sessions[sessionId].host = newHost;
+          console.log(
+            `User ${newHost} is the new host of session ${sessionId}`
+          );
 
-  //         // Send the current state to the new host
-  //         io.to(newHost).emit("currentState", sessions[sessionId]);
+          // Send the current state to the new host
+          io.to(newHost).emit("currentState", sessions[sessionId]);
 
-  //         // Notify all users in the session about the new host
-  //         io.to(sessionId).emit("newHost", { newHost });
-  //       } else {
-  //         console.log(`No remaining users in session ${sessionId}`);
-  //         // No remaining users, remove the session
-  //         delete sessions[sessionId];
-  //       }
-  //     }
-  //   });
-  // });
+          // Notify all users in the session about the new host
+          io.to(sessionId).emit("newHost", { newHost });
+        } else {
+          console.log(`No remaining users in session ${sessionId}`);
+          // No remaining users, remove the session
+          delete sessions[sessionId];
+        }
+      }
+    });
+  });
 });
 
 const PORT = process.env.PORT || 8080;
