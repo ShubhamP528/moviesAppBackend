@@ -6,8 +6,11 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
-    origin:
+    origin: [
       "https://movies-app-frontend-git-main-shubhams-projects-9fdff750.vercel.app",
+      "https://movies-app-frontend-shubhams-projects-9fdff750.vercel.app",
+      "http://localhost:1234",
+    ],
     methods: ["GET", "POST", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   },
@@ -22,8 +25,11 @@ const cors = require("cors");
 // Allow requests from the specified- origin
 app.use(
   cors({
-    origin:
+    origin: [
       "https://movies-app-frontend-git-main-shubhams-projects-9fdff750.vercel.app",
+      "https://movies-app-frontend-shubhams-projects-9fdff750.vercel.app",
+      "http://localhost:1234",
+    ],
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
