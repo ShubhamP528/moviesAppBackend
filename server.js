@@ -87,7 +87,7 @@ io.on("connection", (socket) => {
 
       if (TvideoId) {
         // If video ID exists, emit it to the client
-        socket.emit("videoId", TvideoId);
+        // socket.emit("videoChange", TvideoId);
       } else {
         // If video ID doesn't exist, handle the scenario accordingly (e.g., send an error message)
         socket.emit("videoIdError", "Video ID not found for the room");
@@ -101,6 +101,11 @@ io.on("connection", (socket) => {
         host: socket.id,
         videoId,
       };
+      if (videoId) {
+        socket.to(sessionId).emit("videoChange", { vId: videoId });
+        // socket.emit("videoChange", { vId: videoId });
+        console.log(videoId);
+      }
     }
   });
 

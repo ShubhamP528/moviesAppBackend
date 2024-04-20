@@ -16,14 +16,3 @@ exports.UpdateRoom = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
-
-exports.createMovie = async (req, res) => {
-  try {
-    const { title, duration } = req.body;
-    const movie = new Movie({ title, duration });
-    await movie.save();
-    res.status(201).json({ message: "Movie created successfully" });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
