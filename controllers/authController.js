@@ -6,7 +6,7 @@ if (process.env.NODE_ENV !== "production") {
 }
 
 const createToken = (_id) => {
-  return jwt.sign({ _id }, process.env.SECRET, { expiresIn: "1h" });
+  return jwt.sign({ _id }, process.env.SECRET, { expiresIn: "2d" });
 };
 exports.signup = async (req, res) => {
   try {

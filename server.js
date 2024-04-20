@@ -21,6 +21,7 @@ const authRoutes = require("./routes/authRoutes");
 const roomRoutes = require("./routes/roomRoutes");
 
 const cors = require("cors");
+const requireAuth = require("./middleware/requiredAuth");
 
 // Allow requests from the specified- origin
 app.use(
@@ -49,7 +50,7 @@ app.use("/api/room", roomRoutes);
 // Store sessions' states
 const sessions = {};
 
-app.post("/api/getVideoId", (req, res) => {
+app.post("/api/getVideoId", requireAuth, (req, res) => {
   const { room } = req.body;
   console.log(sessions);
 
@@ -104,7 +105,7 @@ io.on("connection", (socket) => {
       if (videoId) {
         socket.to(sessionId).emit("videoChange", { vId: videoId });
         // socket.emit("videoChange", { vId: videoId });
-        console.log(videoId);
+        // console.log(videoId);
       }
     }
   });
@@ -165,6 +166,7 @@ io.on("connection", (socket) => {
         const remainingUsers = Object.keys(
           io.sockets.adapter.rooms[sessionId]?.sockets || {}
         );
+        console.log("Remaining users => " + io.sockets.adapter);
         if (remainingUsers.length > 0) {
           const newHost = remainingUsers[0];
           sessions[sessionId].host = newHost;
@@ -180,7 +182,7 @@ io.on("connection", (socket) => {
         } else {
           console.log(`No remaining users in session ${sessionId}`);
           // No remaining users, remove the session
-          delete sessions[sessionId];
+          // delete sessions[sessionId];
         }
       }
     });
