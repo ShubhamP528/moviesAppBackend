@@ -52,11 +52,11 @@ const sessions = {};
 
 app.post("/api/getVideoId", requireAuth, (req, res) => {
   const { room } = req.body;
-  console.log(sessions);
+  // console.log(sessions);
 
   if (sessions[room]) {
     const TvideoId = sessions[room].videoId;
-    console.log(sessions);
+    // console.log(sessions);
 
     if (TvideoId) {
       return res.status(201).json({ videoId: TvideoId });
@@ -69,13 +69,13 @@ app.post("/api/getVideoId", requireAuth, (req, res) => {
 
 io.on("connection", (socket) => {
   console.log("A user connected: " + socket.id);
-  console.log(sessions);
+  // console.log(sessions);
 
   socket.on("joinRoom", ({ sessionId, videoId }) => {
-    console.log(`Socket ${socket.id} joining session: ${sessionId}`);
+    // console.log(`Socket ${socket.id} joining session: ${sessionId}`);
     socket.join(sessionId);
     socket.sessionId = sessionId;
-    console.log(sessions);
+    // console.log(sessions);
 
     // Notify all other users in the session
     socket.to(sessionId).emit("newUserJoined");
@@ -84,7 +84,7 @@ io.on("connection", (socket) => {
     if (sessions[sessionId] && !videoId) {
       // Fetch the video ID associated with the room from your backend storage
       const TvideoId = sessions[sessionId].videoId;
-      console.log(sessions);
+      // console.log(sessions);
 
       if (TvideoId) {
         // If video ID exists, emit it to the client
@@ -93,7 +93,7 @@ io.on("connection", (socket) => {
         // If video ID doesn't exist, handle the scenario accordingly (e.g., send an error message)
         socket.emit("videoIdError", "Video ID not found for the room");
       }
-      console.log(sessions[sessionId]);
+      // console.log(sessions[sessionId]);
       socket.emit("currentState", sessions[sessionId]);
     } else {
       sessions[sessionId] = {
@@ -120,10 +120,10 @@ io.on("connection", (socket) => {
   });
 
   socket.on("play", ({ sessionId, time }) => {
-    console.log(`Play video in session: ${sessionId}`);
+    // console.log(`Play video in session: ${sessionId}`);
     const state = { ...sessions[sessionId], action: "play", time: time ?? 0 };
     sessions[sessionId] = state;
-    console.log(sessions);
+    // console.log(sessions);
     io.to(sessionId).emit("control", state);
   });
 
@@ -152,12 +152,12 @@ io.on("connection", (socket) => {
 
   socket.on("disconnect", () => {
     console.log("User disconnected: " + socket.id);
-    console.log("user leave the session");
+    // console.log("user leave the session");
 
     // Check if the disconnected user was the host of any session
     Object.keys(sessions).forEach((sessionId) => {
       if (sessions[sessionId].host === socket.id) {
-        console.log(`Host ${socket.id} left session ${sessionId}`);
+        // console.log(`Host ${socket.id} left session ${sessionId}`);
 
         // Remove the host from the session
         delete sessions[sessionId].host;
@@ -170,9 +170,9 @@ io.on("connection", (socket) => {
         if (remainingUsers.length > 0) {
           const newHost = remainingUsers[0];
           sessions[sessionId].host = newHost;
-          console.log(
-            `User ${newHost} is the new host of session ${sessionId}`
-          );
+          // console.log(
+          //   `User ${newHost} is the new host of session ${sessionId}`
+          // );
 
           // Send the current state to the new host
           io.to(newHost).emit("currentState", sessions[sessionId]);

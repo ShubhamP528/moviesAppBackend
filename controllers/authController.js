@@ -29,7 +29,7 @@ exports.login = async (req, res) => {
 
     // create a Token
     const token = createToken(user._id);
-    console.log(user.room);
+    // console.log(user.room);
     res.status(200).json({ username, token, room: user.room });
   } catch (err) {
     res.status(500).json({ error: err.message });

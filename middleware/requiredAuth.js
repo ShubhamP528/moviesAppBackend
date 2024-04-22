@@ -14,19 +14,19 @@ const requireAuth = async (req, res, next) => {
   }
 
   const token = authorization.split(" ")[1];
-  console.log(token);
+  // console.log(token);
 
   try {
     const { _id } = jwt.verify(token, process.env.SECRET);
-    console.log(_id);
+    // console.log(_id);
 
     // req.user= await User.findOne({_id}).select('_id')
 
     req.user = await User.findOne({ _id });
-    console.log(req.user);
+    // console.log(req.user);
     next();
   } catch (err) {
-    console.log(err.message);
+    // console.log(err.message);
     return res
       .status(401)
       .json({ error: "Request is not authorized", message: err.message });
