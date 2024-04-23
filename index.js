@@ -71,11 +71,6 @@ app.post("/api/getVideoId", requireAuth, (req, res) => {
   return res.status(500).json({ message: "room not registered" });
 });
 
-app.use((req, res, next) => {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  next();
-});
-
 io.on("connection", (socket) => {
   console.log("A user connected: " + socket.id);
   // console.log(sessions);
