@@ -4,19 +4,17 @@ const socketIo = require("socket.io");
 
 const app = express();
 const server = http.createServer(app);
-const io = socketIo(server);
-
-// const io = socketIo(server, {
-//   cors: {
-//     origin: [
-//       "https://movies-app-frontend-git-main-shubhams-projects-9fdff750.vercel.app",
-//       "https://movies-app-frontend-shubhams-projects-9fdff750.vercel.app",
-//       "http://localhost:1234",
-//     ],
-//     methods: ["GET", "POST", "DELETE", "OPTIONS"],
-//     allowedHeaders: ["Content-Type", "Authorization"],
-//   },
-// });
+const io = socketIo(server, {
+  cors: {
+    origin: [
+      "https://movies-app-frontend-git-main-shubhams-projects-9fdff750.vercel.app",
+      "https://movies-app-frontend-shubhams-projects-9fdff750.vercel.app",
+      "http://localhost:1234",
+    ],
+    methods: ["GET", "POST", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  },
+});
 
 const { dbconnect } = require("./config/dbConnect");
 const authRoutes = require("./routes/authRoutes");
@@ -37,13 +35,6 @@ app.use(
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
-
-// Allow requests from the specified origin for Socket.IO
-io.origins([
-  "https://movies-app-frontend-git-main-shubhams-projects-9fdff750.vercel.app",
-  "https://movies-app-frontend-shubhams-projects-9fdff750.vercel.app",
-  "http://localhost:1234",
-]);
 
 if (process.env.NODE_ENV !== "production") {
   require("dotenv").config();
