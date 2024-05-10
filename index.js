@@ -2,7 +2,6 @@ const express = require("express");
 const http = require("http");
 const session = require("express-session");
 const socketIo = require("socket.io");
-const cors = require("cors");
 
 const app = express();
 const server = http.createServer(app);
@@ -22,6 +21,7 @@ const { dbconnect } = require("./config/dbConnect");
 const authRoutes = require("./routes/authRoutes");
 const roomRoutes = require("./routes/roomRoutes");
 
+const cors = require("cors");
 const requireAuth = require("./middleware/requiredAuth");
 
 // Allow requests from the specified- origin
@@ -36,23 +36,6 @@ app.use(
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
-
-const corsOptions = {
-  origin: (origin, callback) => {
-    // Check if the origin is allowed
-    const allowedOrigins = [
-      "https://movies-app-frontend-git-main-shubhams-projects-9fdff750.vercel.app",
-      "https://movies-app-frontend-shubhams-projects-9fdff750.vercel.app",
-      "http://localhost:1234",
-    ];
-    const isAllowed = allowedOrigins.includes(origin);
-    callback(null, isAllowed ? origin : false);
-  },
-  methods: "GET, POST, PUT, DELETE, PATCH, HEAD",
-  credentials: true,
-};
-
-app.use(cors(corsOptions));
 
 if (process.env.NODE_ENV !== "production") {
   require("dotenv").config();
