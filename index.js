@@ -1,6 +1,5 @@
 const express = require("express");
 const http = require("http");
-const session = require("express-session");
 const socketIo = require("socket.io");
 
 const app = express();
@@ -41,14 +40,6 @@ if (process.env.NODE_ENV !== "production") {
   require("dotenv").config();
 }
 dbconnect();
-
-app.use(
-  session({
-    secret: "thisisnotgoodsecret",
-    resave: false,
-    saveUninitialized: true,
-  })
-);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
