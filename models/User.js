@@ -2,11 +2,38 @@ const mongoose = require("mongoose");
 const validator = require("validator");
 const bcrypt = require("bcrypt");
 
+const googleAuthuser = new mongoose.Schema({
+  googleId: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+  username: {
+    type: String,
+    required: true,
+  },
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+  room: {
+    type: String,
+    default: "",
+  },
+  profilePicture: {
+    type: String,
+    default:
+      "https://res.cloudinary.com/dgsjppp4a/image/upload/v1715063684/xeviafw34cp6msw7qmvo.png",
+  },
+});
+
+const GoogleUser = mongoose.model("GoogleAuthUser", googleAuthuser);
+
 const userSchema = new mongoose.Schema({
   username: {
     type: String,
     required: true,
-    unique: true,
   },
   password: {
     type: String,
@@ -19,6 +46,12 @@ const userSchema = new mongoose.Schema({
   },
   room: {
     type: String,
+    default: "",
+  },
+  profilePicture: {
+    type: String,
+    default:
+      "https://res.cloudinary.com/dgsjppp4a/image/upload/v1715063684/xeviafw34cp6msw7qmvo.png",
   },
 });
 
@@ -67,4 +100,9 @@ userSchema.statics.login = async function (username, password) {
   return user;
 };
 
-module.exports = mongoose.model("User", userSchema);
+const UserBasic = mongoose.model("User", userSchema);
+
+module.exports = {
+  UserBasic,
+  GoogleUser,
+};

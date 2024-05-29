@@ -1,6 +1,9 @@
 const express = require("express");
 const http = require("http");
 const socketIo = require("socket.io");
+const session = require("express-session");
+const passport = require("passport");
+const cors = require("cors");
 
 const app = express();
 const server = http.createServer(app);
@@ -20,7 +23,8 @@ const { dbconnect } = require("./config/dbConnect");
 const authRoutes = require("./routes/authRoutes");
 const roomRoutes = require("./routes/roomRoutes");
 
-const cors = require("cors");
+const googleAuth = require("./routes/googleAuth");
+
 const requireAuth = require("./middleware/requiredAuth");
 
 // Allow requests from the specified- origin
@@ -44,9 +48,23 @@ dbconnect();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+app.use(
+  session({
+    secret: "thisismyfavouritesecret",
+    resave: false,
+    saveUninitialized: true,
+  })
+);
+
+app.use(passport.initialize());
+
+app.use(passport.session());
+
 app.get("/", (req, res) => {
   res.send("Hello World!");
 });
+
+// app.use("/", googleAuth);
 
 app.use("/api/auth", authRoutes);
 app.use("/api/room", roomRoutes);

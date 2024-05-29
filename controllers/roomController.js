@@ -1,10 +1,10 @@
-const User = require("../models/User");
+const { UserBasic } = require("../models/User");
 
 exports.UpdateRoom = async (req, res) => {
   try {
     // console.log(req.body);
     const { room, username } = req.body;
-    const user = await User.findOneAndUpdate(
+    const user = await UserBasic.findOneAndUpdate(
       { username },
       { room },
       {
