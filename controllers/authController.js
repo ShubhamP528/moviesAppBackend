@@ -8,6 +8,10 @@ if (process.env.NODE_ENV !== "production") {
 exports.createToken = (_id) => {
   return jwt.sign({ _id }, process.env.SECRET, { expiresIn: "2d" });
 };
+
+createToken = (_id) => {
+  return jwt.sign({ _id }, process.env.SECRET, { expiresIn: "2d" });
+};
 exports.signup = async (req, res) => {
   try {
     const { username, email, password } = req.body;
