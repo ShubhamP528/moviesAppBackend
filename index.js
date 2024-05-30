@@ -7,16 +7,29 @@ const cors = require("cors");
 
 const app = express();
 const server = http.createServer(app);
+
+const allowedOrigins = [
+  "https://movies-app-frontend-git-main-shubhams-projects-9fdff750.vercel.app",
+  "https://movies-app-frontend-shubhams-projects-9fdff750.vercel.app",
+  "http://localhost:1234",
+  "https://moviesyncapp.netlify.app",
+];
+
+app.use(
+  cors({
+    origin: allowedOrigins,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
+  })
+);
+
 const io = socketIo(server, {
   cors: {
-    origin: [
-      "https://movies-app-frontend-git-main-shubhams-projects-9fdff750.vercel.app",
-      "https://movies-app-frontend-shubhams-projects-9fdff750.vercel.app",
-      "http://localhost:1234",
-      "https://moviesyncapp.netlify.app",
-    ],
-    methods: ["GET", "POST", "DELETE", "OPTIONS"],
+    origin: allowedOrigins,
+    methods: ["GET", "POST"],
     allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
   },
 });
 
@@ -24,23 +37,7 @@ const { dbconnect } = require("./config/dbConnect");
 const authRoutes = require("./routes/authRoutes");
 const roomRoutes = require("./routes/roomRoutes");
 
-// const googleAuth = require("./routes/googleAuth");
-
 const requireAuth = require("./middleware/requiredAuth");
-
-// Allow requests from the specified- origin
-app.use(
-  cors({
-    origin: [
-      "https://movies-app-frontend-git-main-shubhams-projects-9fdff750.vercel.app",
-      "https://movies-app-frontend-shubhams-projects-9fdff750.vercel.app",
-      "http://localhost:1234",
-      "https://moviesyncapp.netlify.app",
-    ],
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  })
-);
 
 if (process.env.NODE_ENV !== "production") {
   require("dotenv").config();
@@ -55,6 +52,7 @@ app.use(
     secret: "thisismyfavouritesecret",
     resave: false,
     saveUninitialized: true,
+    cookie: { secure: process.env.NODE_ENV === "production" }, // Ensures secure cookies in production
   })
 );
 
