@@ -30,6 +30,7 @@ app.use(
       "https://movies-app-frontend-git-main-shubhams-projects-9fdff750.vercel.app",
       "https://movies-app-frontend-shubhams-projects-9fdff750.vercel.app",
       "http://localhost:1234",
+      "https://movies-app-frontend-git-test-shubhams-projects-9fdff750.vercel.app",
     ],
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
@@ -43,6 +44,7 @@ const corsOptions = {
       "https://movies-app-frontend-git-main-shubhams-projects-9fdff750.vercel.app",
       "https://movies-app-frontend-shubhams-projects-9fdff750.vercel.app",
       "http://localhost:1234",
+      "https://movies-app-frontend-git-test-shubhams-projects-9fdff750.vercel.app",
     ];
     const isAllowed = allowedOrigins.includes(origin);
     callback(null, isAllowed ? origin : false);
