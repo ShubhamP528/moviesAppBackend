@@ -39,3 +39,15 @@ exports.login = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+exports.verify = async (req, res) => {
+  try {
+    const user = req.user;
+    // console.log(user);
+    const token = createToken(user._id);
+
+    res.status(200).json({ username: user.username, token, room: user.room });
+  } catch (error) {
+    return res.status(401).json({ error: error.message });
+  }
+};

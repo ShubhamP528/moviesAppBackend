@@ -78,6 +78,8 @@ app.use("/api/room", roomRoutes);
 // Store sessions' states
 const sessions = {};
 
+// console.log(sessions);
+
 app.post("/api/getVideoId", requireAuth, (req, res) => {
   const { room } = req.body;
   // console.log(sessions);
@@ -107,9 +109,10 @@ io.on("connection", (socket) => {
 
     // Notify all other users in the session
     socket.to(sessionId).emit("newUserJoined");
+    console.log(videoId, "  ", sessions[sessionId]?.videoId);
 
     // If the session has a state, emit that state to the newly joined client
-    if (sessions[sessionId] && !videoId) {
+    if (sessions[sessionId] && videoId === sessions[sessionId]?.videoId) {
       // Fetch the video ID associated with the room from your backend storage
       const TvideoId = sessions[sessionId].videoId;
       // console.log(sessions);
@@ -123,19 +126,45 @@ io.on("connection", (socket) => {
       }
       // console.log(sessions[sessionId]);
       socket.emit("currentState", sessions[sessionId]);
-    } else {
+    } else if (!sessions[sessionId]) {
       sessions[sessionId] = {
         action: "play",
         time: 0,
         host: socket.id,
         videoId,
       };
-      if (videoId) {
-        socket.to(sessionId).emit("videoChange", { vId: videoId });
-        // socket.emit("videoChange", { vId: videoId });
-        // console.log(videoId);
+    } else {
+      if (videoId !== sessions[sessionId]?.videoId) {
+        sessions[sessionId] = {
+          action: "play",
+          time: 0,
+          host: socket.id,
+          videoId,
+        };
+
+        socket
+          .to(sessionId)
+          .emit("videoChange", { vId: videoId, action: "play", time: 0 });
+
+        socket.emit("currentState", sessions[sessionId]);
       }
+      // else if (videoId === sessions[sessionId]?.videoId) {
+      //   tim = sessions[sessionId]?.time;
+      //   act = sessions[sessionId]?.action;
+      //   socket
+      //     .to(sessionId)
+      //     .emit("videoChange", { vId: videoId, action: act, time: tim });
+      //   // socket.emit("videoChange", { vId: videoId });
+      //   // console.log(videoId);
+      // }
     }
+  });
+
+  // for message
+  socket.on("chatMessage", ({ room, message }) => {
+    // Broadcast the message to other users in the room
+    console.log(room, message);
+    io.to(room).emit("receiveMessage", message);
   });
 
   // Handle receiving the current state from an existing user
