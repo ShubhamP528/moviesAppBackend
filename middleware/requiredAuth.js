@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
 
-const User = require("../models/User");
+const { UserBasic } = require("../models/User");
+const { GoogleUser } = require("../models/User");
 
 require("dotenv").config();
 
@@ -22,8 +23,10 @@ const requireAuth = async (req, res, next) => {
 
     // req.user= await User.findOne({_id}).select('_id')
 
-    req.user = await User.findOne({ _id });
+    req.user =
+      (await UserBasic.findOne({ _id })) || (await GoogleUser.findOne({ _id }));
     // console.log(req.user);
+
     next();
   } catch (err) {
     // console.log(err.message);

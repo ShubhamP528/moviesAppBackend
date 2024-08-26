@@ -1,17 +1,21 @@
-const User = require("../models/User");
+const { UserBasic } = require("../models/User");
 const jwt = require("jsonwebtoken");
 
 if (process.env.NODE_ENV !== "production") {
   require("dotenv").config();
 }
 
-const createToken = (_id) => {
+exports.createToken = (_id) => {
+  return jwt.sign({ _id }, process.env.SECRET, { expiresIn: "2d" });
+};
+
+createToken = (_id) => {
   return jwt.sign({ _id }, process.env.SECRET, { expiresIn: "2d" });
 };
 exports.signup = async (req, res) => {
   try {
     const { username, email, password } = req.body;
-    const user = await User.signup(username, email, password);
+    const user = await UserBasic.signup(username, email, password);
 
     // create a token
 
@@ -25,7 +29,7 @@ exports.signup = async (req, res) => {
 exports.login = async (req, res) => {
   try {
     const { username, password } = req.body;
-    const user = await User.login(username, password);
+    const user = await UserBasic.login(username, password);
 
     // create a Token
     const token = createToken(user._id);
@@ -33,5 +37,17 @@ exports.login = async (req, res) => {
     res.status(200).json({ username, token, room: user.room });
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+};
+
+exports.verify = async (req, res) => {
+  try {
+    const user = req.user;
+    // console.log(user);
+    const token = createToken(user._id);
+
+    res.status(200).json({ username: user.username, token, room: user.room });
+  } catch (error) {
+    return res.status(401).json({ error: error.message });
   }
 };

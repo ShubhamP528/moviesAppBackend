@@ -1,20 +1,43 @@
 const express = require("express");
 const http = require("http");
 const socketIo = require("socket.io");
+const session = require("express-session");
+const passport = require("passport");
+const cors = require("cors");
 
 const app = express();
 const server = http.createServer(app);
+
+const allowedOrigins = [
+  "https://movies-app-frontend-git-main-shubhams-projects-9fdff750.vercel.app",
+  "https://movies-app-frontend-shubhams-projects-9fdff750.vercel.app",
+  "http://localhost:1234",
+  "https://moviesyncapp.netlify.app",
+  "https://syncmovieapp.vercel.app",
+  "*",
+];
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
+
 const io = socketIo(server, {
   cors: {
-    origin: [
-      "https://movies-app-frontend-git-main-shubhams-projects-9fdff750.vercel.app",
-      "https://movies-app-frontend-shubhams-projects-9fdff750.vercel.app",
-      "http://localhost:1234",
-      "https://movies-app-frontend-git-test-shubhams-projects-9fdff750.vercel.app",
-      "https://sync-movie-dev.netlify.app",
-    ],
-    methods: ["GET", "POST", "DELETE", "OPTIONS"],
+    origin: allowedOrigins,
+    methods: ["GET", "POST"],
     allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
   },
 });
 
@@ -22,42 +45,7 @@ const { dbconnect } = require("./config/dbConnect");
 const authRoutes = require("./routes/authRoutes");
 const roomRoutes = require("./routes/roomRoutes");
 
-const cors = require("cors");
 const requireAuth = require("./middleware/requiredAuth");
-
-// Allow requests from the specified- origin
-app.use(
-  cors({
-    origin: [
-      "https://movies-app-frontend-git-main-shubhams-projects-9fdff750.vercel.app",
-      "https://movies-app-frontend-shubhams-projects-9fdff750.vercel.app",
-      "http://localhost:1234",
-      "https://movies-app-frontend-git-test-shubhams-projects-9fdff750.vercel.app",
-      "https://sync-movie-dev.netlify.app",
-    ],
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  })
-);
-
-const corsOptions = {
-  origin: (origin, callback) => {
-    // Check if the origin is allowed
-    const allowedOrigins = [
-      "https://movies-app-frontend-git-main-shubhams-projects-9fdff750.vercel.app",
-      "https://movies-app-frontend-shubhams-projects-9fdff750.vercel.app",
-      "http://localhost:1234",
-      "https://movies-app-frontend-git-test-shubhams-projects-9fdff750.vercel.app",
-      "https://sync-movie-dev.netlify.app",
-    ];
-    const isAllowed = allowedOrigins.includes(origin);
-    callback(null, isAllowed ? origin : false);
-  },
-  methods: "GET, POST, PUT, DELETE, PATCH, HEAD",
-  credentials: true,
-};
-
-app.use(cors(corsOptions));
 
 if (process.env.NODE_ENV !== "production") {
   require("dotenv").config();
@@ -67,15 +55,32 @@ dbconnect();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+app.use(
+  session({
+    secret: "thisismyfavouritesecret",
+    resave: false,
+    saveUninitialized: true,
+    cookie: { secure: process.env.NODE_ENV === "production" }, // Ensures secure cookies in production
+  })
+);
+
+app.use(passport.initialize());
+
+app.use(passport.session());
+
 app.get("/", (req, res) => {
   res.send("Hello World!");
 });
+
+// app.use("/", googleAuth);
 
 app.use("/api/auth", authRoutes);
 app.use("/api/room", roomRoutes);
 
 // Store sessions' states
 const sessions = {};
+
+// console.log(sessions);
 
 app.post("/api/getVideoId", requireAuth, (req, res) => {
   const { room } = req.body;
@@ -106,9 +111,10 @@ io.on("connection", (socket) => {
 
     // Notify all other users in the session
     socket.to(sessionId).emit("newUserJoined");
+    console.log(videoId, "  ", sessions[sessionId]?.videoId);
 
     // If the session has a state, emit that state to the newly joined client
-    if (sessions[sessionId] && !videoId) {
+    if (sessions[sessionId] && videoId === sessions[sessionId]?.videoId) {
       // Fetch the video ID associated with the room from your backend storage
       const TvideoId = sessions[sessionId].videoId;
       // console.log(sessions);
@@ -122,19 +128,45 @@ io.on("connection", (socket) => {
       }
       // console.log(sessions[sessionId]);
       socket.emit("currentState", sessions[sessionId]);
-    } else {
+    } else if (!sessions[sessionId]) {
       sessions[sessionId] = {
         action: "play",
         time: 0,
         host: socket.id,
         videoId,
       };
-      if (videoId) {
-        socket.to(sessionId).emit("videoChange", { vId: videoId });
-        // socket.emit("videoChange", { vId: videoId });
-        // console.log(videoId);
+    } else {
+      if (videoId !== sessions[sessionId]?.videoId) {
+        sessions[sessionId] = {
+          action: "play",
+          time: 0,
+          host: socket.id,
+          videoId,
+        };
+
+        socket
+          .to(sessionId)
+          .emit("videoChange", { vId: videoId, action: "play", time: 0 });
+
+        socket.emit("currentState", sessions[sessionId]);
       }
+      // else if (videoId === sessions[sessionId]?.videoId) {
+      //   tim = sessions[sessionId]?.time;
+      //   act = sessions[sessionId]?.action;
+      //   socket
+      //     .to(sessionId)
+      //     .emit("videoChange", { vId: videoId, action: act, time: tim });
+      //   // socket.emit("videoChange", { vId: videoId });
+      //   // console.log(videoId);
+      // }
     }
+  });
+
+  // for message
+  socket.on("chatMessage", ({ room, message }) => {
+    // Broadcast the message to other users in the room
+    console.log(room, message);
+    io.to(room).emit("receiveMessage", message);
   });
 
   // Handle receiving the current state from an existing user
