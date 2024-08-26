@@ -13,6 +13,7 @@ const allowedOrigins = [
   "https://movies-app-frontend-shubhams-projects-9fdff750.vercel.app",
   "http://localhost:1234",
   "https://moviesyncapp.netlify.app",
+  "https://syncmovieapp.vercel.app",
   "*",
 ];
 
