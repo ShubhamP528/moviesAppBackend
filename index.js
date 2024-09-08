@@ -17,6 +17,7 @@ const allowedOrigins = [
   "https://syncmovieapp.vercel.app",
   "http://localhost:8080/",
   "https://moviesappbackend.onrender.com/",
+  "https://movie-sync-watching.netlify.app",
   "*",
 ];
 
