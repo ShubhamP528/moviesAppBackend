@@ -12,8 +12,11 @@ const allowedOrigins = [
   "https://movies-app-frontend-git-main-shubhams-projects-9fdff750.vercel.app",
   "https://movies-app-frontend-shubhams-projects-9fdff750.vercel.app",
   "http://localhost:1234",
+  "http://localhost:3001",
   "https://moviesyncapp.netlify.app",
   "https://syncmovieapp.vercel.app",
+  "http://localhost:8080/",
+  "https://moviesappbackend.onrender.com/",
   "*",
 ];
 
@@ -68,8 +71,9 @@ app.use(passport.initialize());
 
 app.use(passport.session());
 
-app.get("/", (req, res) => {
-  res.send("Hello World!");
+app.get("/api/hii", (req, res) => {
+  console.log("Hello world!");
+  res.json({ message: "Hello World!" });
 });
 
 // app.use("/", googleAuth);
