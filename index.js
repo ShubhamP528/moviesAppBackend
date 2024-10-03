@@ -19,7 +19,7 @@ const allowedOrigins = [
   "https://moviesappbackend.onrender.com/",
   "https://movie-sync-watching.netlify.app",
   "https://movies-app-backend-two.vercel.app/",
-  "https://syncmovie-watch.netlify.app/"
+  "https://syncmovie-watch.netlify.app/",
   "*",
 ];
 
