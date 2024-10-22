@@ -49,6 +49,7 @@ const io = socketIo(server, {
 const { dbconnect } = require("./config/dbConnect");
 const authRoutes = require("./routes/authRoutes");
 const roomRoutes = require("./routes/roomRoutes");
+const googleAuthRoutes = require("./routes/googleAuth");
 
 const requireAuth = require("./middleware/requiredAuth");
 
@@ -81,6 +82,7 @@ app.get("/api/hii", (req, res) => {
 // app.use("/", googleAuth);
 
 app.use("/api/auth", authRoutes);
+app.use("/api/googleAuth", googleAuthRoutes);
 app.use("/api/room", roomRoutes);
 
 // Store sessions' states
