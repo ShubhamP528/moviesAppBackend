@@ -8,7 +8,7 @@ const googleAuthuser = new mongoose.Schema({
     required: true,
     unique: true,
   },
-  username: {
+  name: {
     type: String,
     required: true,
   },
@@ -54,16 +54,16 @@ const userSchema = new mongoose.Schema({
   profilePicture: {
     type: String,
     default:
-      "https://res.cloudinary.com/dgsjppp4a/image/upload/v1715063684/xeviafw34cp6msw7qmvo.png",
+      "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_640.png",
   },
 });
 
 // static signup method
 
-userSchema.statics.signup = async function (username, email, password) {
+userSchema.statics.signup = async function (name, email, password) {
   // validation
 
-  if (!email || !password || !username) {
+  if (!email || !password || !name) {
     throw Error("ALl fields must be field");
   }
 
@@ -78,20 +78,20 @@ userSchema.statics.signup = async function (username, email, password) {
   const salt = await bcrypt.genSalt(10);
   const hash = await bcrypt.hash(password, salt);
 
-  const user = await this.create({ email, password: hash, username });
+  const user = await this.create({ email, password: hash, name });
 
   return user;
 };
 
-userSchema.statics.login = async function (username, password) {
-  if (!username || !password) {
+userSchema.statics.login = async function (name, password) {
+  if (!name || !password) {
     throw Error("All fields must be field");
   }
 
-  const user = await this.findOne({ username });
+  const user = await this.findOne({ name });
 
   if (!user) {
-    throw Error("Incorrect username");
+    throw Error("Incorrect name");
   }
 
   const match = await bcrypt.compare(password, user.password);

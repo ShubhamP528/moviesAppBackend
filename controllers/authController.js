@@ -16,13 +16,13 @@ createToken = (_id) => {
 };
 exports.signup = async (req, res) => {
   try {
-    const { username, email, password } = req.body;
-    const user = await UserBasic.signup(username, email, password);
+    const { name, email, password } = req.body;
+    const user = await UserBasic.signup(name, email, password);
 
     // create a token
 
     const token = createToken(user._id);
-    res.status(201).json({ username, token, room: user.room });
+    res.status(201).json({ name, token, room: user.room });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -30,13 +30,13 @@ exports.signup = async (req, res) => {
 
 exports.login = async (req, res) => {
   try {
-    const { username, password } = req.body;
-    const user = await UserBasic.login(username, password);
+    const { name, password } = req.body;
+    const user = await UserBasic.login(name, password);
 
     // create a Token
     const token = createToken(user._id);
     // console.log(user.room);
-    res.status(200).json({ username, token, room: user.room });
+    res.status(200).json({ name, token, room: user.room });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -48,7 +48,13 @@ exports.verify = async (req, res) => {
     // console.log(user);
     const token = createToken(user._id);
 
-    res.status(200).json({ username: user.username, token, room: user.room });
+    res.status(200).json({
+      name: user.name,
+      token,
+      room: user.room,
+      email: user.email,
+      profilePicture: user.profilePicture,
+    });
   } catch (error) {
     return res.status(401).json({ error: error.message });
   }
@@ -80,7 +86,13 @@ exports.signupForAll = async (req, res) => {
     const user = await UserBasic.create({ email, password: hash, name });
     const token = createToken(user._id);
 
-    res.status(200).json({ username: user.name, token, room: user.room });
+    res.status(200).json({
+      name: user.name,
+      token,
+      room: user.room,
+      email: user.email,
+      profilePicture: user.profilePicture,
+    });
   } catch (error) {
     console.log(error);
     res.status(500).json({ error: error.message });
@@ -108,7 +120,13 @@ exports.loginForAll = async (req, res) => {
 
     const token = createToken(user._id);
 
-    res.status(200).json({ username: user.name, token, room: user.room });
+    res.status(200).json({
+      name: user.name,
+      token,
+      room: user.room,
+      email: user.email,
+      profilePicture: user.profilePicture,
+    });
   } catch (error) {
     console.log(error);
     res.status(500).json({ error: error.message });
