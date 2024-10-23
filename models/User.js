@@ -31,13 +31,16 @@ const googleAuthuser = new mongoose.Schema({
 const GoogleUser = mongoose.model("GoogleAuthUser", googleAuthuser);
 
 const userSchema = new mongoose.Schema({
-  username: {
+  googleId: {
+    type: String,
+    unique: true,
+  },
+  name: {
     type: String,
     required: true,
   },
   password: {
     type: String,
-    required: true,
   },
   email: {
     type: String,

@@ -27,12 +27,11 @@ passport.deserializeUser((obj, done) => {
   done(null, obj);
 });
 
-const login = async (req, res) => {
+const loginByGoogle = async (req, res) => {
   try {
     const email = req?.user?.emails[0]?.value;
     // console.log(email);
-    const user =
-      (await GoogleUser.findOne({})) || (await UserBasic.findOne({ email }));
+    const user = await UserBasic.findOne({ email });
 
     if (user) {
       const token = createToken(user._id);
@@ -40,10 +39,10 @@ const login = async (req, res) => {
 
       return res
         .status(200)
-        .json({ username: user.username, token, room: user.room });
+        .json({ username: user.name, token, room: user.room });
     } else {
-      const newUser = await GoogleUser.create({
-        username: req?.user?.displayName,
+      const newUser = await UserBasic.create({
+        name: req?.user?.displayName,
         email,
         googleId: req?.user?.id,
         profilePicture: req?.user?.photos[0]?.value,
@@ -53,11 +52,11 @@ const login = async (req, res) => {
       const token = createToken(newUser._id);
       return res
         .status(200)
-        .json({ username: newUser?.username, token, room: newUser.room });
+        .json({ username: newUser?.name, token, room: newUser.room });
     }
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
 
-module.exports = { passport, login };
+module.exports = { passport, loginByGoogle };

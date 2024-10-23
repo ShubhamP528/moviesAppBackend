@@ -1,7 +1,10 @@
 const express = require("express");
 const route = express.Router();
 
-const { passport, login } = require("../controllers/googleAuth.controller");
+const {
+  passport,
+  loginByGoogle,
+} = require("../controllers/googleAuth.controller");
 
 // Route to initiate Google authentication
 
@@ -14,7 +17,7 @@ route.get(
 route.get(
   "/auth/google/callback",
   passport.authenticate("google", { failureRedirect: "/auth/google" }),
-  login
+  loginByGoogle
 );
 
 module.exports = route;
