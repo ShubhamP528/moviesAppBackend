@@ -46,7 +46,7 @@ const loginByGoogle = async (req, res) => {
 
       // if (process.env.production) {
       res.redirect(
-        `https://smart-shop-kro.netlify.app/?token=${token}&email=${user.email}&profilePicture=${user.profilePicture}&name=${user.name}&room=${room}&profilePicture=${user.profilePicture}`
+        `https://syncmovie-watch.netlify.app/?token=${token}&email=${user.email}&profilePicture=${user.profilePicture}&name=${user.name}&room=${room}&profilePicture=${user.profilePicture}`
       );
       // } else {
       //   res.redirect(
@@ -76,7 +76,7 @@ const loginByGoogle = async (req, res) => {
       const token = createToken(newUser._id);
       // if (process.env.production) {
       res.redirect(
-        `https://smart-shop-kro.netlify.app/?token=${token}&email=${newUser.email}&profilePicture=${newUser.profilePicture}&name=${newUser.name}&room=${room}`
+        `https://syncmovie-watch.netlify.app/?token=${token}&email=${newUser.email}&profilePicture=${newUser.profilePicture}&name=${newUser.name}&room=${room}`
       );
       // } else {
       //   res.redirect(
