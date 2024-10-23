@@ -44,15 +44,15 @@ const loginByGoogle = async (req, res) => {
         console.log("room is here");
       }
 
-      if (process.env.production) {
-        res.redirect(
-          `https://smart-shop-kro.netlify.app/?token=${token}&email=${user.email}&profilePicture=${user.profilePicture}&name=${user.name}&room=${room}&profilePicture=${user.profilePicture}`
-        );
-      } else {
-        res.redirect(
-          `http://localhost:3001/?token=${token}&email=${user.email}&profilePicture=${user.profilePicture}&name=${user.name}&room=${room}`
-        );
-      }
+      // if (process.env.production) {
+      res.redirect(
+        `https://smart-shop-kro.netlify.app/?token=${token}&email=${user.email}&profilePicture=${user.profilePicture}&name=${user.name}&room=${room}&profilePicture=${user.profilePicture}`
+      );
+      // } else {
+      //   res.redirect(
+      //     `http://localhost:3001/?token=${token}&email=${user.email}&profilePicture=${user.profilePicture}&name=${user.name}&room=${room}`
+      //   );
+      // }
 
       // return res
       //   .status(200)
@@ -74,15 +74,15 @@ const loginByGoogle = async (req, res) => {
         console.log("room is here");
       }
       const token = createToken(newUser._id);
-      if (process.env.production) {
-        res.redirect(
-          `https://smart-shop-kro.netlify.app/?token=${token}&email=${newUser.email}&profilePicture=${newUser.profilePicture}&name=${newUser.name}&room=${room}`
-        );
-      } else {
-        res.redirect(
-          `http://localhost:3001/?token=${token}&email=${newUser.email}&profilePicture=${newUser.profilePicture}&name=${newUser.name}&room=${room}`
-        );
-      }
+      // if (process.env.production) {
+      res.redirect(
+        `https://smart-shop-kro.netlify.app/?token=${token}&email=${newUser.email}&profilePicture=${newUser.profilePicture}&name=${newUser.name}&room=${room}`
+      );
+      // } else {
+      //   res.redirect(
+      //     `http://localhost:3001/?token=${token}&email=${newUser.email}&profilePicture=${newUser.profilePicture}&name=${newUser.name}&room=${room}`
+      //   );
+      // }
       // return res
       //   .status(200)
       //   .json({ name: newUser?.name, token, room: newUser.room });
