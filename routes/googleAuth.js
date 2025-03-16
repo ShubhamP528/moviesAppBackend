@@ -4,6 +4,7 @@ const route = express.Router();
 const {
   passport,
   loginByGoogle,
+  loginByGooglePlus,
 } = require("../controllers/googleAuth.controller");
 
 // Route to initiate Google authentication
@@ -19,5 +20,9 @@ route.get(
   passport.authenticate("google", { failureRedirect: "/auth/google" }),
   loginByGoogle
 );
+
+// updated google login
+
+route.post("/callback-login", loginByGooglePlus);
 
 module.exports = route;

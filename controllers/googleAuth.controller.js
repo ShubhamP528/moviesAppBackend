@@ -5,6 +5,8 @@ const { createToken } = require("../controllers/authController");
 
 require("dotenv").config();
 
+const { OAuth2Client } = require("google-auth-library");
+
 passport.use(
   new GoogleStrategy(
     {
@@ -93,4 +95,67 @@ const loginByGoogle = async (req, res) => {
   }
 };
 
-module.exports = { passport, loginByGoogle };
+const loginByGooglePlus = async (req, res) => {
+  try {
+    const tokenT = req.body.token; // The token sent from the frontend
+
+    if (!tokenT) {
+      return res.status(400).json({ message: "Token is missing" });
+    }
+    const client = new OAuth2Client(process.env.UPDATED_CLIENT_ID);
+
+    console.log(client);
+
+    console.log(process.env.UPDATED_CLIENT_ID);
+
+    // Verify the Google ID token using OAuth2Client
+    const ticket = await client.verifyIdToken({
+      idToken: tokenT,
+      audience: process.env.UPDATED_CLIENT_ID, // Your Google OAuth 2.0 Client ID
+    });
+
+    console.log(ticket);
+
+    const payload = ticket.getPayload(); // Get user info from the token
+    const email = payload.email;
+    const name = payload.name;
+    const profilePicture = payload.picture;
+    const googleId = payload.sub; // This is the unique ID from Google
+    console.log(payload);
+
+    // Check if the user already exists in the database
+    let user;
+
+    user = await UserBasic.findOne({ email });
+
+    // user = await User.findOne({
+    //   $or: [{ googleAuthId: googleId }, { email: email }],
+    // });
+
+    if (!user) {
+      user = await UserBasic.create({
+        name: name,
+        email,
+        googleId: googleId,
+        profilePicture: profilePicture,
+      });
+    }
+
+    await user.save();
+
+    const token = createToken(user._id);
+    return res.json({
+      name: user.name,
+      email: user.email,
+      userId: user._id,
+      token,
+      profilePicture: user.profilePicture,
+      room: user.room,
+    });
+  } catch (e) {
+    console.error(e);
+    res.status(400).json({ error: e.message });
+  }
+};
+
+module.exports = { passport, loginByGoogle, loginByGooglePlus };

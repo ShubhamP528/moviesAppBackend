@@ -86,7 +86,16 @@ app.use("/api/room", roomRoutes);
 // Store sessions' states
 const sessions = {};
 
-// console.log(sessions);
+console.log("This is sessions => ", sessions);
+
+app.get("/getTotalUser", (req, res) => {
+  console.log(sessions);
+  let count = 0;
+  for (let session in sessions) {
+    count++;
+  }
+  return res.status(200).json({ totalUsers: count });
+});
 
 app.post("/api/getVideoId", requireAuth, (req, res) => {
   const { room } = req.body;
@@ -107,17 +116,38 @@ app.post("/api/getVideoId", requireAuth, (req, res) => {
 
 io.on("connection", (socket) => {
   console.log("A user connected: " + socket.id);
-  // console.log(sessions);
+  console.log(sessions);
 
-  socket.on("joinRoom", ({ sessionId, videoId }) => {
+  socket.on("joinRoom", ({ room }) => {
+    console.log(`Socket ${socket.id} joining room: ${room}`);
+    socket.join(room);
+    console.log(io.sockets.adapter.rooms);
+  });
+
+  socket.on("totalUsers", ({ room }) => {
+    // console.log(io.sockets.adapter.rooms);
+    const rooms = io.sockets.adapter.rooms;
+    let userCount = 0;
+    if (rooms.has(room)) {
+      userCount = rooms.get(room).size;
+      // console.log(`Number of users in room "${room}":`, userCount);
+    } else {
+      // console.log(`Room "${room}" does not exist.`);
+    }
+    io.to(room).emit("totalUsers-ans", userCount);
+  });
+
+  socket.on("newuser", ({ sessionId, videoId }) => {
     // console.log(`Socket ${socket.id} joining session: ${sessionId}`);
-    socket.join(sessionId);
+    // socket.join(sessionId);
     socket.sessionId = sessionId;
     // console.log(sessions);
 
     // Notify all other users in the session
     socket.to(sessionId).emit("newUserJoined");
     console.log(videoId, "  ", sessions[sessionId]?.videoId);
+
+    console.log("This is sessions => ", sessions);
 
     // If the session has a state, emit that state to the newly joined client
     if (sessions[sessionId] && videoId === sessions[sessionId]?.videoId) {
@@ -140,6 +170,7 @@ io.on("connection", (socket) => {
         time: 0,
         host: socket.id,
         videoId,
+        rate: 1,
       };
     } else {
       if (videoId !== sessions[sessionId]?.videoId) {
@@ -148,11 +179,15 @@ io.on("connection", (socket) => {
           time: 0,
           host: socket.id,
           videoId,
+          rate: 1,
         };
 
-        socket
-          .to(sessionId)
-          .emit("videoChange", { vId: videoId, action: "play", time: 0 });
+        socket.to(sessionId).emit("videoChange", {
+          vId: videoId,
+          action: "play",
+          time: 0,
+          rate: 1,
+        });
 
         socket.emit("currentState", sessions[sessionId]);
       }
@@ -185,11 +220,20 @@ io.on("connection", (socket) => {
   });
 
   socket.on("play", ({ sessionId, time }) => {
+    console.log(io.sockets.adapter.rooms);
+
     // console.log(`Play video in session: ${sessionId}`);
     const state = { ...sessions[sessionId], action: "play", time: time ?? 0 };
     sessions[sessionId] = state;
     // console.log(sessions);
     io.to(sessionId).emit("control", state);
+  });
+
+  socket.on("changePlaybackSpeed", ({ sessionId, rate }) => {
+    console.log(`Change playback speed in session: ${sessionId}`);
+    const state = { ...sessions[sessionId], rate };
+    sessions[sessionId] = state;
+    io.to(sessionId).emit("changePlaybackSpeed-ans", rate);
   });
 
   socket.on("requestInitialPlaybackTime", ({ sessionId }) => {
