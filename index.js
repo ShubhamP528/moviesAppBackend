@@ -43,6 +43,9 @@ const io = socketIo(server, {
     credentials: true,
   },
 });
+const { manualVoideoSocket, router } = require("./socket");
+
+manualVoideoSocket(io);
 
 const { dbconnect } = require("./config/dbConnect");
 const authRoutes = require("./routes/authRoutes");
@@ -82,6 +85,8 @@ app.get("/api/hii", (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/googleAuth", googleAuthRoutes);
 app.use("/api/room", roomRoutes);
+
+app.use(router);
 
 // Store sessions' states
 const sessions = {};
@@ -127,6 +132,7 @@ io.on("connection", (socket) => {
   socket.on("totalUsers", ({ room }) => {
     // console.log(io.sockets.adapter.rooms);
     const rooms = io.sockets.adapter.rooms;
+    console.log(rooms);
     let userCount = 0;
     if (rooms.has(room)) {
       userCount = rooms.get(room).size;
@@ -257,6 +263,37 @@ io.on("connection", (socket) => {
     sessions[sessionId] = state;
 
     io.to(sessionId).emit("control", { action: "seek", time });
+  });
+
+  socket.on("sessions-leave", ({ sessionId }) => {
+    console.log(
+      `User ${socket.id} requested manual disconnect from session ${sessionId}`
+    );
+
+    // Leave the room
+    socket.leave(`${sessionId}`);
+
+    // Optional: clean up the session if this user was the host
+    if (sessions[`${sessionId}`]?.host === socket.id) {
+      delete sessions[`${sessionId}`].host;
+
+      // Find a new host if there are others
+      const remainingUsers = io.sockets.adapter.rooms.get(`${sessionId}`);
+      if (remainingUsers && remainingUsers.size > 0) {
+        const newHost = Array.from(remainingUsers)[0];
+        sessions[`${sessionId}`].host = newHost;
+
+        io.to(newHost).emit("currentState", sessions[`${sessionId}`]);
+
+        io.to(`${sessionId}`).emit("newHost", { newHost });
+      } else {
+        // No users left, delete the session
+        delete sessions[`${sessionId}`];
+      }
+    }
+
+    // // Finally disconnect the socket (optional: only if you want to cut off)
+    // socket.disconnect();
   });
 
   socket.on("disconnect", () => {

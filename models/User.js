@@ -51,6 +51,10 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: "",
   },
+  sessionType: {
+    type: String,
+    default: "youTube", // default session type  ["manual","youTube"]
+  },
   profilePicture: {
     type: String,
     default:

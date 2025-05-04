@@ -22,7 +22,9 @@ exports.signup = async (req, res) => {
     // create a token
 
     const token = createToken(user._id);
-    res.status(201).json({ name, token, room: user.room });
+    res
+      .status(201)
+      .json({ name, token, room: user.room, sessionType: user.sessionType });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -36,7 +38,9 @@ exports.login = async (req, res) => {
     // create a Token
     const token = createToken(user._id);
     // console.log(user.room);
-    res.status(200).json({ name, token, room: user.room });
+    res
+      .status(200)
+      .json({ name, token, room: user.room, sessionType: user.sessionType });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -54,6 +58,7 @@ exports.verify = async (req, res) => {
       room: user.room,
       email: user.email,
       profilePicture: user.profilePicture,
+      sessionType: user.sessionType,
     });
   } catch (error) {
     return res.status(401).json({ error: error.message });
@@ -92,6 +97,7 @@ exports.signupForAll = async (req, res) => {
       room: user.room,
       email: user.email,
       profilePicture: user.profilePicture,
+      sessionType: user.sessionType,
     });
   } catch (error) {
     console.log(error);
@@ -126,6 +132,7 @@ exports.loginForAll = async (req, res) => {
       room: user.room,
       email: user.email,
       profilePicture: user.profilePicture,
+      sessionType: user.sessionType,
     });
   } catch (error) {
     console.log(error);

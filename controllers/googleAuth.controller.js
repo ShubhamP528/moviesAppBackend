@@ -151,6 +151,7 @@ const loginByGooglePlus = async (req, res) => {
       token,
       profilePicture: user.profilePicture,
       room: user.room,
+      sessionType: user.sessionType,
     });
   } catch (e) {
     console.error(e);
