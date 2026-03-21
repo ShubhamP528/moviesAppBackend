@@ -143,6 +143,15 @@ const manualVoideoSocket = (io) => {
       io.to(`m-${room}`).emit("manualSessions-receiveMessage", message);
     });
 
+    // Typing indicators
+    socket.on("manualSessions-typing", ({ room, name, email }) => {
+      socket.to(`m-${room}`).emit("manualSessions-userTyping", { name, email });
+    });
+
+    socket.on("manualSessions-stopTyping", ({ room, name }) => {
+      socket.to(`m-${room}`).emit("manualSessions-stopTyping", { name });
+    });
+
     // Handle receiving the current state from an existing user
     socket.on("manualSessions-currentState", ({ sessionId, action, time }) => {
       // Update the session's state
@@ -160,7 +169,7 @@ const manualVoideoSocket = (io) => {
       });
     });
 
-    socket.on("manualSessions-play", ({ sessionId, time }) => {
+    socket.on("manualSessions-play", ({ sessionId, time, userName }) => {
       console.log(io.sockets.adapter.rooms);
 
       // console.log(`Play video in session: ${sessionId}`);
@@ -168,6 +177,7 @@ const manualVoideoSocket = (io) => {
         ...manualSessions[`m-${sessionId}`],
         action: "play",
         time: time ?? 0,
+        userName,
       };
       manualSessions[`m-${sessionId}`] = state;
       // console.log(manualSessions);
@@ -190,18 +200,19 @@ const manualVoideoSocket = (io) => {
       io.to(`m-${sessionId}`).emit("manualSessions-control", state);
     });
 
-    socket.on("manualSessions-pause", ({ sessionId, time }) => {
+    socket.on("manualSessions-pause", ({ sessionId, time, userName }) => {
       console.log(`Pause video in session: ${`m-${sessionId}`}`);
       const state = {
         ...manualSessions[`m-${sessionId}`],
         action: "pause",
         time,
+        userName,
       };
       manualSessions[`m-${sessionId}`] = state;
       io.to(`m-${sessionId}`).emit("manualSessions-control", state);
     });
 
-    socket.on("manualSessions-seek", ({ sessionId, time }) => {
+    socket.on("manualSessions-seek", ({ sessionId, time, userName }) => {
       console.log(`Seek video in session: ${`m-${sessionId}`}`);
       // Update the session's state to reflect the seek action
       const state = manualSessions[`m-${sessionId}`] || {};
@@ -211,6 +222,7 @@ const manualVoideoSocket = (io) => {
       io.to(`m-${sessionId}`).emit("manualSessions-control", {
         action: "seek",
         time,
+        userName,
       });
     });
 

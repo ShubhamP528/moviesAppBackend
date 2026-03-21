@@ -13,6 +13,7 @@ const allowedOrigins = [
   "https://movies-app-frontend-shubhams-projects-9fdff750.vercel.app",
   "http://localhost:1234",
   "http://localhost:3001",
+  "http://localhost:3000",
   "https://syncmovieapp.vercel.app",
   "http://localhost:8080/",
   "https://movies-app-backend-two.vercel.app/",
@@ -216,6 +217,19 @@ io.on("connection", (socket) => {
     io.to(room).emit("receiveMessage", message);
   });
 
+  // Typing indicators
+  socket.on("typing", ({ room, name, email }) => {
+    socket.to(room).emit("userTyping", { name, email });
+  });
+
+  socket.on("stopTyping", ({ room, name }) => {
+    socket.to(room).emit("stopTyping", { name });
+  });
+
+  socket.on("messageSeen", ({ room, messageId, userName, profilePicture }) => {
+    socket.to(room).emit("userReadMessage", { messageId, userName, profilePicture });
+  });
+
   // Handle receiving the current state from an existing user
   socket.on("currentState", ({ sessionId, action, time }) => {
     // Update the session's state
@@ -225,11 +239,11 @@ io.on("connection", (socket) => {
     io.to(sessionId).emit("control", { ...sessions[sessionId], action, time });
   });
 
-  socket.on("play", ({ sessionId, time }) => {
+  socket.on("play", ({ sessionId, time, userName }) => {
     console.log(io.sockets.adapter.rooms);
 
     // console.log(`Play video in session: ${sessionId}`);
-    const state = { ...sessions[sessionId], action: "play", time: time ?? 0 };
+    const state = { ...sessions[sessionId], action: "play", time: time ?? 0, userName };
     sessions[sessionId] = state;
     // console.log(sessions);
     io.to(sessionId).emit("control", state);
@@ -248,21 +262,21 @@ io.on("connection", (socket) => {
     io.to(sessionId).emit("control", state);
   });
 
-  socket.on("pause", ({ sessionId, time }) => {
+  socket.on("pause", ({ sessionId, time, userName }) => {
     console.log(`Pause video in session: ${sessionId}`);
-    const state = { ...sessions[sessionId], action: "pause", time };
+    const state = { ...sessions[sessionId], action: "pause", time, userName };
     sessions[sessionId] = state;
     io.to(sessionId).emit("control", state);
   });
 
-  socket.on("seek", ({ sessionId, time }) => {
+  socket.on("seek", ({ sessionId, time, userName }) => {
     console.log(`Seek video in session: ${sessionId}`);
     // Update the session's state to reflect the seek action
     const state = sessions[sessionId] || {};
     state.time = time;
     sessions[sessionId] = state;
 
-    io.to(sessionId).emit("control", { action: "seek", time });
+    io.to(sessionId).emit("control", { action: "seek", time, userName });
   });
 
   socket.on("sessions-leave", ({ sessionId }) => {
